@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>My first three.js app</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%
+        }
+    </style>
+</head>
+
+<body>
+    <script src="js/three.js"></script>
+    <script>
+        // step1
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        var scene = new THREE.Scene(); // 场景
+        var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000); // 相机
+        var renderer = new THREE.WebGLRenderer(); // 渲染器
+        // 设置渲染器尺寸
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // 将渲染器添加到HTML文档中
+        document.body.appendChild(renderer.domElement);
+
+        // step2
+        // 创建立方体对象
+        var geometry = new THREE.BoxGeometry(1, 1, 1);
+        // 设置样式
+        var material = new THREE.MeshBasicMaterial({
+            color: '#d09a9a'
+        });
+        // 创建网格，并添加立方体及其作用的样式
+        var cube = new THREE.Mesh(geometry, material);
+        // 将网格对象放入场景中，默认(0,0,0)坐标
+        scene.add(cube);
+        // 将摄像机往外移动一些，避免与立方体重合
+        camera.position.z = 5;
+
+        // step3
+        // 渲染场景
+        function animate() {
+            requestAnimationFrame(animate); //循环渲染动画
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+
+</html>
