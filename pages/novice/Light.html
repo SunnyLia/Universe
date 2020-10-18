@@ -26,28 +26,14 @@
         /* 创建网格模型 */
         //创建一个长宽高都是100的立方体几何体Geometry
         var geometry = new THREE.BoxGeometry(100, 100, 100);
-        // 漫反射MeshLambertMaterial()
+        //设置几何体的材质对象Material
         var material = new THREE.MeshLambertMaterial({
-            color: 0x0000ff,
-            // opacity: 0.7,//透明度设置
-            // transparent: true, //是否开启透明度效果
+            color: '#eaeaea'
         });
         //创建网格模型对象Mesh
         var mesh = new THREE.Mesh(geometry, material);
         //将网格模型添加到场景中
         scene.add(mesh); //网格模型添加到场景中
-
-        //添加高光效果
-        var geometry1 = new THREE.BoxGeometry(100, 100, 100);
-        // 镜面反射MeshPhongMaterial()
-        var material1 = new THREE.MeshPhongMaterial({
-            color: 0x0000ff,
-            specular: '#ffffff', //高光颜色
-            shininess: 12 //光照强度系数
-        });
-        var mesh1 = new THREE.Mesh(geometry1, material1);
-        mesh1.position.set(200, 10, 0);
-        scene.add(mesh1); //网格模型添加到场景中
 
         /* 光源设置 */
         //创建点光源
@@ -61,7 +47,10 @@
         var ambient = new THREE.AmbientLight(0x444444);
         //将环光源添加到场景中
         scene.add(ambient);
-        console.log(scene)
+
+        //平行光，比如太阳光
+        var Directional = new THREE.DirectionalLight(0xffffff);
+        scene.add(Directional);
 
         /* 相机设置 */
         var s = 200; //三维场景显示范围控制系数，系数越大，显示的范围越大
