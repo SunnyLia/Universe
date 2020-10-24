@@ -32,15 +32,11 @@
         });
         //创建网格模型对象Mesh
         var mesh = new THREE.Mesh(geometry, material);
-        //将网格模型添加到场景中
-        scene.add(mesh); //网格模型添加到场景中
 
         // 1、网格模型复制和克隆
-        var mesh2 = mesh.clone();//克隆网格模型
-        mesh.translateX(200);//网格模型mesh平移
-        scene.add(mesh2); //网格模型添加到场景中
-        // 网格模型克隆的时候，mesh对象的几何体对象mesh.geometry属性值是box对象的索引值，返回的新对象mesh2几何体属性mesh.geometry的值同样是box对象的索引值。
-        geometry.scale(0.5, 0.5, 1.5);//几何体缩放
+
+        //将网格模型添加到场景中
+        scene.add(mesh); //网格模型添加到场景中
 
         /* 光源设置 */
         //创建点光源
@@ -75,7 +71,7 @@
         //执行渲染操作   指定场景、相机作为参数
         renderer.render(scene, camera);
 
-
+        
     </script>
 </body>
 
