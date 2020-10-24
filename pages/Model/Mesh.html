@@ -28,7 +28,8 @@
         var geometry = new THREE.BoxGeometry(100, 100, 100);
         //设置几何体的材质对象Material
         var material = new THREE.MeshLambertMaterial({
-            color: '#eaeaea'
+            color: 0x0000ff, //三角面颜色
+            wireframe: true,//网格模型以线条的模式渲染
         });
         //创建网格模型对象Mesh
         var mesh = new THREE.Mesh(geometry, material);
@@ -68,7 +69,7 @@
         //执行渲染操作   指定场景、相机作为参数
         renderer.render(scene, camera);
 
-        
+
     </script>
 </body>
 

@@ -27,13 +27,23 @@
         //创建一个长宽高都是100的立方体几何体Geometry
         var geometry = new THREE.BoxGeometry(100, 100, 100);
         //设置几何体的材质对象Material
-        var material = new THREE.MeshLambertMaterial({
-            color: '#eaeaea'
+        var material = new THREE.LineBasicMaterial({
+            color: 0xff0000 //线条颜色
         });
-        //创建网格模型对象Mesh
-        var mesh = new THREE.Mesh(geometry, material);
+
+
+        // //1、线Line
+        // //两点确定一条直线，线模型Line就是使用线条去连接几何体的顶点数据。
+        // var line = new THREE.Line(geometry, material);//线条模型对象
+        // // 2、环线LineLoop
+        // // 绘制一条直线到下一个顶点，并将最后一个顶点连回第一个顶点。
+        // var line = new THREE.LineLoop(geometry, material);//线条模型
+         // 3、线段（LineSegments）
+        // 在若干对的顶点之间绘制的一系列的线。
+        var line = new THREE.LineSegments(geometry, material);//线条模型
+        
         //将网格模型添加到场景中
-        scene.add(mesh); //网格模型添加到场景中
+        scene.add(line); //网格模型添加到场景中
 
         /* 光源设置 */
         //创建点光源
@@ -68,7 +78,7 @@
         //执行渲染操作   指定场景、相机作为参数
         renderer.render(scene, camera);
 
-        
+
     </script>
 </body>
 
