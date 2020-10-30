@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My first three.js app</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="./libs/main.css">
+</head>
+
+<body>
+    <script src="./libs/three.js"></script>
+    <script>
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        var loader = new THREE.TextureLoader();
+        var geometry = new THREE.BoxBufferGeometry(20, 20, 20);
+        loader.load(
+            './textures/crate.gif',
+            function (texture) {
+                var material = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    // color: 0X66ccff
+                });
+
+                var cube = new THREE.Mesh(geometry, material);  // 创建这个mesh对象
+
+                scene.add(cube); // 将新创建的带贴图的几何体添加到场景内，我们就可以看到了
+
+                console.log('we come to here');
+                renderer.render(scene, camera);
+            },
+            undefined,
+            function (err) {
+                console: error('发生错误');
+            }
+        );
+
+
+        camera.position.set(50, 20, 50); //设置相机位置
+        camera.lookAt(scene.position); //设置相机方向(指向的场景对象)
+    </script>
+</body>
+
+</html>
