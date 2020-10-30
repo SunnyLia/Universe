@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>第一个three.js文件_WebGL三维场景</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            /* 隐藏body窗口区域滚动条 */
+        }
+    </style>
+    <!--引入three.js三维引擎-->
+    <script src="../../js/three.js"></script>
+</head>
+
+<body>
+    <script>
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+
+        /* 创建场景对象 */
+        var scene = new THREE.Scene();
+
+        /* 创建网格模型 */
+        //创建一个长宽高都是100的立方体几何体Geometry
+        var geometry = new THREE.BoxGeometry(100, 100, 100);
+        //设置几何体的材质对象Material
+        var material = new THREE.MeshLambertMaterial({
+            color: '#eaeaea'
+        });
+        //创建网格模型对象Mesh
+        var mesh = new THREE.Mesh(geometry, material);
+        //将网格模型添加到场景中
+        scene.add(mesh); //网格模型添加到场景中
+
+        /* 光源设置 */
+        // 光源对象都有一个共同的基类Light，光源Light也有一个基类Object3D。也就是说Threejs环境光、点光源等子类光源可以继承Light和Object3D两个父类的属性和方法。
+        //2、创建点光源
+        // 点光源的光线沿着发光核心向外发散，同一平面的不同位置与点光源光线入射角是不同的，点光源照射下，同一个平面不同区域是呈现出不同的明暗效果
+        var point = new THREE.PointLight(0xffffff);
+        //点光源位置
+        // 点光源需要设置位置属性.position，光源位置不同，物体表面被照亮的面不同，远近不同因为衰减明暗程度不同
+        point.position.set(400, 200, 300); //测试点光源位置从(400, 200, 300)位置改变到(-400, -200, -300)
+        //将点光源添加到场景中
+        scene.add(point);
+
+        //1、创建环光源
+        // 环境光是没有特定方向的光源，主要是均匀整体改变Threejs物体表面的明暗效果，
+        var ambient = new THREE.AmbientLight(0x444444); //测试0x444444更改为0x888888,
+        //将环光源添加到场景中
+        scene.add(ambient);
+
+        // //3、创建平行光
+        // // 平行光可以理解为太阳光，从无限远处照射过来
+        // // Threejs平行光提供了位置.position和目标.target两个属性来一起确定平行光方向
+        // var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        // // 设置光源的方向：通过光源position属性和目标指向对象的position属性计算
+        // // 平行光如果不设置.position和.target属性，光线默认从上往下照射，也就是可以认为(0,1,0)和(0,0,0)两个坐标确定的光线方向。
+        // directionalLight.position.set(80, 100, 50);
+        // // 方向光指向对象网格模型mesh2，可以不设置，默认的位置是0,0,0
+        // directionalLight.target = mesh;
+        // scene.add(directionalLight);
+
+        // 4、聚光源SpotLight
+        // 聚光源可以认为是一个沿着特定方会逐渐发散的光源，照射范围在三维空间中构成一个圆锥体。
+        // 通过属性.angle可以设置聚光源发散角度，聚光源照射方向设置和平行光光源一样是通过位置.position和目标.target两个属性来实现。
+
+        var spotLight = new THREE.SpotLight(0xffffff);
+        // 设置聚光光源位置
+        spotLight.position.set(200, 500, 200);
+        // 聚光灯光源指向网格模型mesh2
+        spotLight.target = mesh;
+        // 设置聚光光源发散角度
+        spotLight.angle = Math.PI / 6
+        scene.add(spotLight);//光对象添加到scene场景中
+
+
+        /* 相机设置 */
+        var s = 200; //三维场景显示范围控制系数，系数越大，显示的范围越大
+        //创建相机对象
+        var camera = new THREE.OrthographicCamera(-s * width / height, s * width / height, s, -s, 1, 1000);
+        //设置相机位置
+        camera.position.set(200, 100, 100);
+        //设置相机方向(指向的场景对象)
+        camera.lookAt(scene.position);
+
+        /* 创建渲染器对象 */
+        var renderer = new THREE.WebGLRenderer();
+        //设置渲染区域尺寸
+        renderer.setSize(width, height);
+        //设置背景颜色
+        renderer.setClearColor(0xb9d3ff, 1);
+        //body元素中插入canvas对象
+        document.body.appendChild(renderer.domElement);
+        //执行渲染操作   指定场景、相机作为参数
+        renderer.render(scene, camera);
+
+
+    </script>
+</body>
+
+</html>
