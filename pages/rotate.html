@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../libs/three.js"></script>
+</head>
+
+<body onload="threeStart();">
+    <script>
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        function threeStart() {
+            initScene();
+            initCamera();
+            initObject()
+            initGrid()
+            initRender()
+            animation()
+        }
+        var camera;
+        function initCamera() {
+            camera = new THREE.PerspectiveCamera(60, width / height, 1, 10000);
+            camera.position.set(100, 300, 600);
+            // camera.lookAt(scene.position);
+            camera.lookAt({
+                x: 0,
+                y: 0,
+                z: 0
+            });
+        }
+        var scene;
+        function initScene() {
+            scene = new THREE.Scene();
+        }
+        var renderer;
+        function initRender() {
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            renderer.setClearColor(0xFFFFFF, 1.0);
+            document.body.appendChild(renderer.domElement);
+        }
+        var mesh;
+        function initObject() {
+            var geometry = new THREE.BoxGeometry(100, 100, 100);
+            console.log(geometry);
+            for (var i = 0; i < geometry.faces.length; i += 2) {
+                var hex = Math.random() * 0xffffff;
+                geometry.faces[i].color.setHex(hex);
+                geometry.faces[i + 1].color.setHex(hex);
+            }
+
+            var material = new THREE.MeshBasicMaterial({
+                vertexColors: THREE.FaceColors
+            });
+            console.log(material);
+            mesh = new THREE.Mesh(geometry, material);
+            // mesh.position = new THREE.Vector3(0, 0, 0);
+            console.log(mesh);
+            scene.add(mesh);
+        }
+        function initGrid() {
+            var helper = new THREE.GridHelper(1000, 50);
+            helper.setColors(0x0000ff, 0x808080);
+            scene.add(helper);
+        }
+        // 帧循环、游戏循环
+        function animation() {
+            // 围绕Y轴旋转0.01弧度
+            // mesh.rotation.y += 0.01;
+            mesh.rotateY(0.01);
+            mesh.rotateX(0.01);
+            renderer.render(scene, camera);
+            requestAnimationFrame(animation);
+        }
+    </script>
+</body>
+
+</html>
