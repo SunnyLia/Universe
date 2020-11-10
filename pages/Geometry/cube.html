@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My first three.js app</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../build/main.css">
+</head>
+
+<body>
+    <script src="../../build/three.js"></script>
+    <script>
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        /**
+         * 创建场景对象Scene
+         */
+        var scene = new THREE.Scene();
+        /**
+         * 创建网格模型
+         */
+        var texture = new THREE.TextureLoader().load('../../textures/crate.gif');// 创建一个纹理加载器对象，可以加载图片作为几何体纹理
+        var geometry = new THREE.BoxBufferGeometry(100, 100, 100); //创建一个立方体几何对象Geometry
+        var material = new THREE.MeshBasicMaterial({
+            // color: 0x0000ff,
+            map: texture
+        }); //材质对象Material
+        var mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
+        scene.add(mesh); //网格模型添加到场景中
+
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        //创建相机对象
+        var camera = new THREE.PerspectiveCamera(70, width / height, 1, 10000);
+        camera.position.z = 200; //设置相机位置
+        camera.lookAt(scene.position); //设置相机方向(指向的场景对象)
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+
+        animate()
+        function animate() {
+            requestAnimationFrame(animate);
+            mesh.rotation.x += 0.005;
+            mesh.rotation.y += 0.005;
+            //执行渲染操作   指定场景、相机作为参数
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+
+</html>
