@@ -25,18 +25,20 @@
         var width = window.innerWidth; //窗口宽度
         var height = window.innerHeight; //窗口高度
         //创建相机对象
-        var camera = new THREE.PerspectiveCamera(70, width / height, 1, 10000);
-        camera.position.z = 400; //设置相机位置
+        var camera = new THREE.PerspectiveCamera(50, width / height, 1, 10000);
+        camera.position.y = 400; //设置相机位置
+        // camera.position.set(200, 300, 200); //设置相机位置
         /**
          * 光源设置
          */
         //点光源
-        var point = new THREE.PointLight( 0xffffff, 0.8 );
+        var point = new THREE.PointLight(0xffffff, 0.8);
         // point.position.set(400, 200, 300); //点光源位置
+        // scene.add(point); //点光源添加到场景中
         camera.add(point);
-        scene.add(point); //点光源添加到场景中
+        scene.add(camera); //点光源添加到场景中
         //环境光
-        var ambient = new THREE.AmbientLight(0xcccccc, 0.4 );
+        var ambient = new THREE.AmbientLight(0xcccccc, 0.4);
         scene.add(ambient);
         /**
          * 创建网格模型
@@ -54,18 +56,18 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            // var timer = Date.now() * 0.0001;
-            // camera.position.x = Math.cos(timer) * 800;
-            // camera.position.z = Math.sin(timer) * 800;
+            var timer = Date.now() * 0.0001;
+            camera.position.x = Math.cos(timer) * 800;
+            camera.position.z = Math.sin(timer) * 800;
             camera.lookAt(scene.position);
 
             // 所有子模型对象 旋转
-            // scene.traverse(function (object) {
-            //     if (object.isMesh === true) {
-            //         object.rotation.x = timer * 5;
-            //         object.rotation.y = timer * 2.5;
-            //     }
-            // });
+            scene.traverse(function (object) {
+                if (object.isMesh === true) {
+                    object.rotation.x = timer * 5;
+                    object.rotation.y = timer * 2.5;
+                }
+            });
             //执行渲染操作   指定场景、相机作为参数
             renderer.render(scene, camera);
         }
@@ -85,44 +87,44 @@
 
             //
             geometry = new THREE.ParametricBufferGeometry(ParametricGeometries.plane(100, 100), 10, 10);
-            // geometry.center();
+            geometry.center();
             mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(- 200, 0, 200);
             scene.add(mesh);
 
-            // geometry = new THREE.ParametricBufferGeometry(ParametricGeometries.klein, 20, 20);
-            // mesh = new THREE.Mesh(geometry, material);
-            // mesh.position.set(0, 0, 200);
-            // // mesh.scale.multiplyScalar( 5 );
-            // scene.add(mesh);
+            geometry = new THREE.ParametricBufferGeometry(ParametricGeometries.klein, 20, 20);
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, 0, 200);
+            mesh.scale.multiplyScalar(7); //放大5倍大小
+            scene.add(mesh);
 
-            // geometry = new THREE.ParametricBufferGeometry(ParametricGeometries.mobius, 20, 20);
-            // mesh = new THREE.Mesh(geometry, material);
-            // mesh.position.set(200, 0, 200);
-            // // mesh.scale.multiplyScalar( 30 );
-            // scene.add(mesh);
+            geometry = new THREE.ParametricBufferGeometry(ParametricGeometries.mobius, 20, 20);
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(200, 0, 200);
+            mesh.scale.multiplyScalar(30);
+            scene.add(mesh);
 
-            // //
-            // var GrannyKnot = new Curves.GrannyKnot();
+            //
+            var GrannyKnot = new Curves.GrannyKnot();
 
-            // var torus = new ParametricGeometries.TorusKnotGeometry(50, 10, 50, 20, 2, 3);
-            // geometry = new THREE.BufferGeometry().fromGeometry(torus);
-            // mesh = new THREE.Mesh(geometry, material);
-            // mesh.position.set(- 200, 0, - 200);
-            // scene.add(mesh);
+            var torus = new ParametricGeometries.TorusKnotGeometry(50, 10, 50, 20, 2, 3);
+            geometry = new THREE.BufferGeometry().fromGeometry(torus);
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(- 200, 0, - 200);
+            scene.add(mesh);
 
-            // var sphere = new ParametricGeometries.SphereGeometry(50, 20, 10);
-            // geometry = new THREE.BufferGeometry().fromGeometry(sphere);
-            // mesh = new THREE.Mesh(geometry, material);
-            // mesh.position.set(0, 0, - 200);
-            // scene.add(mesh);
+            var sphere = new ParametricGeometries.SphereGeometry(50, 20, 10);
+            geometry = new THREE.BufferGeometry().fromGeometry(sphere);
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(0, 0, - 200);
+            scene.add(mesh);
 
-            // var tube = new ParametricGeometries.TubeGeometry(GrannyKnot, 100, 3, 8, true);
-            // geometry = new THREE.BufferGeometry().fromGeometry(tube);
-            // mesh = new THREE.Mesh(geometry, material);
-            // mesh.position.set(200, 0, - 200);
-            // // mesh.scale.multiplyScalar(2);
-            // scene.add(mesh);
+            var tube = new ParametricGeometries.TubeGeometry(GrannyKnot, 100, 3, 8, true);
+            geometry = new THREE.BufferGeometry().fromGeometry(tube);
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(200, 0, - 200);
+            mesh.scale.multiplyScalar(2);
+            scene.add(mesh);
         }
     </script>
 </body>
