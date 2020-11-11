@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My first three.js app</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../build/main.css">
+</head>
+
+<body>
+    <script src="../../build/three.js"></script>
+    <script>
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        var mouseX = 0, mouseY = 0;
+        /**
+         * 创建场景对象Scene
+         */
+        var scene = new THREE.Scene();
+        /**
+         * 光源设置
+         */
+        var light = new THREE.DirectionalLight(0xffffff);
+        light.position.set(0, 0, 1);
+        scene.add(light);
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+        camera.position.z = 1800;
+        camera.lookAt(scene.position); //设置相机方向(指向的场景对象)
+
+        /**
+         * 创建模型对象
+         */
+        creatShadow()
+        create20Div()
+        createObject()
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.setClearColor(0xffffff, 1); //设置背景颜色
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+        //执行渲染操作   指定场景、相机作为参数
+        renderer.render(scene, camera);
+        animate()
+        function animate() {
+            requestAnimationFrame(animate);
+            camera.position.x += (mouseX - camera.position.x) * 0.05;
+            camera.position.y += (- mouseY - camera.position.y) * 0.05;
+
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+        /*创建阴影*/
+        function creatShadow() {
+            var canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            // getContext() 方法返回一个用于在画布上绘图的环境。
+            var context = canvas.getContext('2d');
+            // 创建一个放射性渐变，渐变从画布的中心开始，到以canvas.width/2为半径的圆结束。
+            var gradient = context.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2);
+            // 在离画布中心canvas.width*0.1的位置添加一种颜色
+            gradient.addColorStop(0.1, 'rgba(210,210,210,1)');
+            // 在画布渐变的最后位置添加一种颜色，
+            gradient.addColorStop(1, 'rgba(255,255,255,1)');
+            // 填充方式就是刚才创建的渐变填充
+            context.fillStyle = gradient;
+            // 实际的在画布上绘制渐变。
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+
+            // 画布做好了，然后我们将画布转化为纹理，代码如下：
+            var shadowTexture = new THREE.CanvasTexture(canvas);
+            // 注意CanvasTexture可以从canvas画布中创建一个纹理。然后由纹理定义材质，代码如下：
+            var shadowMaterial = new THREE.MeshBasicMaterial({ map: shadowTexture });
+
+
+            // 定义一个宽和高都是300的平面，平面内部没有出现多个网格。
+            var shadowGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
+            // 构建一个Mesh网格，位置在（0，-250，0），即y轴下面250的距离。
+            var mesh = new THREE.Mesh(shadowGeo, shadowMaterial);
+            mesh.position.y = - 250;
+            // 围绕x轴旋转-90度，这样竖着的平面就横着了。阴影是需要横着的。
+            mesh.rotation.x = - Math.PI / 2;
+            scene.add(mesh);
+            // 第二个平面阴影
+            mesh = new THREE.Mesh(shadowGeo, shadowMaterial);
+            mesh.position.x = - 400;
+            mesh.position.y = - 250;
+            mesh.rotation.x = - Math.PI / 2;
+            scene.add(mesh);
+            // 第三个平面阴影
+            mesh = new THREE.Mesh(shadowGeo, shadowMaterial);
+            mesh.position.x = 400;
+            mesh.position.y = - 250;
+            mesh.rotation.x = - Math.PI / 2;
+            scene.add(mesh);
+        }
+        var geometry1, geometry2, geometry3;
+        function create20Div() {
+            // 20面体的半径是200单位
+            var radius = 200;
+
+            // 生成3个20面体
+            geometry1 = new THREE.IcosahedronBufferGeometry(radius, 1);
+
+            // 从20面体中的顶点数组（geometry1.attributes.position）中获得顶点的个数，目的是为每个顶点设置一个颜色属性
+            var count = geometry1.attributes.position.count;
+            // 为几何体设置一个颜色属性，颜色属性的属性名必须是‘color’，这样Three.js才认识。
+            geometry1.addAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+
+            // 由于场景中有3个20面体，所以这里通过clone函数复制3个。clone函数将生产一模一样的一个几何体。
+            geometry2 = geometry1.clone();
+            geometry3 = geometry1.clone();
+
+            // 这里声明一个临时的颜色值，待会用来作为中间结果。
+            var color = new THREE.Color();
+
+            // 获得3个几何体的位置属性数组
+            var positions1 = geometry1.attributes.position;
+            var positions2 = geometry2.attributes.position;
+            var positions3 = geometry3.attributes.position;
+
+            // 获得3个几何体的颜色属性数组
+            var colors1 = geometry1.attributes.color;
+            var colors2 = geometry2.attributes.color;
+            var colors3 = geometry3.attributes.color;
+
+            // 使用HSL颜色空间来设置颜色。下文将简单介绍这种颜色空间。
+            // 为每个顶点设置一种颜色
+            for (var i = 0; i < count; i++) {
+
+                color.setHSL((positions1.getY(i) / radius + 1) / 2, 1.0, 0.5);
+                colors1.setXYZ(i, color.r, color.g, color.b);
+
+                color.setHSL(0, (positions2.getY(i) / radius + 1) / 2, 0.5);
+                colors2.setXYZ(i, color.r, color.g, color.b);
+
+                color.setRGB(1, 0.8 - (positions3.getY(i) / radius + 1) / 2, 0);
+                colors3.setXYZ(i, color.r, color.g, color.b);
+
+            }
+        }
+        function createObject() {
+            var material = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                flatShading: true,
+                vertexColors: THREE.VertexColors,
+                shininess: 0
+            });
+
+            var wireframeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true, transparent: true });
+            var mesh = new THREE.Mesh(geometry1, material);
+            var wireframe = new THREE.Mesh(geometry1, wireframeMaterial);
+            mesh.add(wireframe);
+            mesh.position.x = - 400;
+            mesh.rotation.x = - 1.87;
+            scene.add(mesh);
+
+            mesh = new THREE.Mesh(geometry2, material);
+            wireframe = new THREE.Mesh(geometry2, wireframeMaterial);
+            mesh.add(wireframe);
+            mesh.position.x = 400;
+            scene.add(mesh);
+
+            mesh = new THREE.Mesh(geometry3, material);
+            wireframe = new THREE.Mesh(geometry3, wireframeMaterial);
+            mesh.add(wireframe);
+            scene.add(mesh);
+        }
+    </script>
+</body>
+
+</html>
