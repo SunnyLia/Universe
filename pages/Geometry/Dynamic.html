@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My first three.js app</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../build/main.css">
+</head>
+
+<body>
+    <script src="../../build/three.js"></script>
+    <script type="module">
+        import { FirstPersonControls } from '../../jsm/controls/FirstPersonControls.js';
+
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        var clock = new THREE.Clock();
+        var worldWidth = 128, worldDepth = 128;
+
+        /**
+         * 创建场景对象Scene
+         */
+        var scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xaaccff);
+        scene.fog = new THREE.FogExp2(0xaaccff, 0.0007);
+        /**
+         * 创建网格模型
+         */
+        var texture = new THREE.TextureLoader().load('../../textures/water.jpg');
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        // uv两个方向纹理重复数量
+        texture.repeat.set(5, 5);
+
+        var geometry = new THREE.PlaneBufferGeometry(20000, 20000, worldWidth - 1, worldDepth - 1);
+        geometry.rotateX(- Math.PI / 2);
+
+        var position = geometry.attributes.position;
+        for (var i = 0; i < position.count; i++) {
+            var y = 35 * Math.sin(i / 2);
+            position.setY(i, y);
+        }
+        var material = new THREE.MeshBasicMaterial(
+            {
+                color: 0x0044ff,
+                map: texture
+            }
+        );
+        //材质对象Material
+        var mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
+        scene.add(mesh); //网格模型添加到场景中
+
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        //创建相机对象
+        var camera = new THREE.PerspectiveCamera(40, width / height, 1, 20000);
+
+        camera.position.y = 200;
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+
+        /*控制器*/
+        var controls = new FirstPersonControls(camera, renderer.domElement);
+        controls.movementSpeed = 100;
+        controls.lookSpeed = 0.01;
+
+        animate()
+        function animate() {
+            requestAnimationFrame(animate);
+            var delta = clock.getDelta();
+            var time = clock.getElapsedTime() * 10;
+
+            var position = geometry.attributes.position;
+            for (var i = 0; i < position.count; i++) {
+                var y = 35 * Math.sin(i / 5 + (time + i) / 7);
+                position.setY(i, y);
+            }
+
+            position.needsUpdate = true;
+            controls.update(delta);
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+
+</html>
