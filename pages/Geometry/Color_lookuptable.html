@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My first three.js app</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../build/main.css">
+</head>
+
+<body>
+    <script src="../../build/three.js"></script>
+    <script type="module">
+        import { GUI } from '../../jsm/libs/dat.gui.module.js';
+        import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
+        import { Lut } from '../../jsm/math/Lut.js';
+
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        var lut = new Lut();
+        var gui = new GUI();
+        var params = {
+            colorMap: 'rainbow',
+        }
+        gui.add(params, 'colorMap', ['rainbow', 'cooltowarm', 'blackbody', 'grayscale']).onChange(function () {
+            updateColors();
+        });
+        /**
+         * 创建场景对象Scene
+         */
+        var scene = new THREE.Scene();
+
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        var camera = new THREE.PerspectiveCamera(60, width / height, 1, 100);
+        camera.position.set(0, 0, 10);
+        scene.add(camera);
+        /**
+        * 光源设置
+        */
+        //点光源
+        var point = new THREE.PointLight(0xffffff, 1);
+        camera.add(point); //点光源添加到场景中
+
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.autoClear = false;
+        renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+
+        /**
+        * 创建网格模型
+        */
+        loadModal()
+        var controls = new OrbitControls(camera, renderer.domElement);
+        controls.addEventListener('change', render);
+
+        function render() {
+            renderer.clear();
+            //执行渲染操作   指定场景、相机作为参数
+            renderer.render(scene, camera);
+        }
+        var geometry;
+        function loadModal() {
+            var loader = new THREE.BufferGeometryLoader();
+            loader.load('../../models/json/pressure.json', function (geometry1) {
+                geometry = geometry1;
+                geometry.center();
+
+                // 通过平均面法线来计算顶点法线，效果更光滑
+                geometry.computeVertexNormals();
+                var count = geometry.attributes.position.count;
+                // 创建属性缓冲区对象,3个为一组,表示一个顶点的法向量数据
+                geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+
+                var material = new THREE.MeshLambertMaterial({
+                    side: THREE.DoubleSide,
+                    color: 0xF5F5F5,
+                    vertexColors: true //是否使用顶点着色。
+                }); //材质对象Material
+                var mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
+                scene.add(mesh); //网格模型添加到场景中
+
+                updateColors()
+            })
+
+        }
+        function updateColors() {
+            lut.setColorMap(params.colorMap);
+            lut.setMax(2000);
+            lut.setMin(0);
+            var pressures = geometry.attributes.pressure;
+            var colors = geometry.attributes.color;
+            for (var i = 0; i < pressures.array.length; i++) {
+                var colorValue = pressures.array[i];
+                var color = lut.getColor(colorValue);
+                if (color === undefined) {
+                    console.log('Unable to determine color for value:', colorValue);
+                } else {
+                    colors.setXYZ(i, color.r, color.g, color.b);
+                }
+            }
+        
+            colors.needsUpdate = true;
+            render()
+        }
+    </script>
+</body>
+
+</html>

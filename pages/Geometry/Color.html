@@ -36,7 +36,7 @@
          * 创建模型对象
          */
         creatShadow()
-        create20Div()
+        setColor()
         createObject()
         /**
          * 创建渲染器对象
@@ -84,8 +84,9 @@
 
             // 定义一个宽和高都是300的平面，平面内部没有出现多个网格。
             var shadowGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
-            // 构建一个Mesh网格，位置在（0，-250，0），即y轴下面250的距离。
+            // 第一个平面阴影
             var mesh = new THREE.Mesh(shadowGeo, shadowMaterial);
+            mesh.position.x = 0;
             mesh.position.y = - 250;
             // 围绕x轴旋转-90度，这样竖着的平面就横着了。阴影是需要横着的。
             mesh.rotation.x = - Math.PI / 2;
@@ -104,7 +105,7 @@
             scene.add(mesh);
         }
         var geometry1, geometry2, geometry3;
-        function create20Div() {
+        function setColor() {
             // 20面体的半径是200单位
             var radius = 200;
 
@@ -114,7 +115,8 @@
             // 从20面体中的顶点数组（geometry1.attributes.position）中获得顶点的个数，目的是为每个顶点设置一个颜色属性
             var count = geometry1.attributes.position.count;
             // 为几何体设置一个颜色属性，颜色属性的属性名必须是‘color’，这样Three.js才认识。
-            geometry1.addAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+            geometry1.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+            console.log(geometry1);
 
             // 由于场景中有3个20面体，所以这里通过clone函数复制3个。clone函数将生产一模一样的一个几何体。
             geometry2 = geometry1.clone();
