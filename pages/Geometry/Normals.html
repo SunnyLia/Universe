@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My first three.js app</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../build/main.css">
+</head>
+
+<body>
+    <script src="../../build/three.js"></script>
+    <script type="module">
+        import { GUI } from '../../jsm/libs/dat.gui.module.js';
+
+        import { VertexNormalsHelper } from '../../jsm/helpers/VertexNormalsHelper.js';
+        import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        var geometries = [
+            new THREE.BoxBufferGeometry(200, 200, 200, 2, 2, 2),
+            new THREE.CircleBufferGeometry(200, 32),
+            new THREE.CylinderBufferGeometry(75, 75, 200, 8, 8),
+            new THREE.IcosahedronBufferGeometry(100, 1),
+            new THREE.OctahedronBufferGeometry(200, 0),
+            new THREE.PlaneBufferGeometry(200, 200, 4, 4),
+            new THREE.RingBufferGeometry(32, 64, 16),
+            new THREE.SphereBufferGeometry(100, 12, 12),
+            new THREE.TorusBufferGeometry(64, 16, 12, 12),
+            new THREE.TorusKnotBufferGeometry(64, 16)
+        ];
+        var options = {
+            Geometry: 0
+        };
+        /**
+         * 创建场景对象Scene
+         */
+        var scene = new THREE.Scene();
+
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        //创建相机对象
+        var camera = new THREE.PerspectiveCamera(70, width / height, 1, 1000);
+        camera.position.z = 500;
+        /**
+         * 光源设置
+         */
+        //点光源
+        var point = new THREE.PointLight(0xffffff);
+        point.position.set(400, 200, 300); //点光源位置
+        scene.add(point); //点光源添加到场景中
+        //环境光
+        var ambient = new THREE.AmbientLight(0x444444);
+        scene.add(ambient);
+        // console.log(scene)
+        /**
+         * 创建网格模型
+         */
+        addMash()
+
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+        // 控制器
+        var controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableZoom = false;
+
+        animate()
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        var mesh, geometry;
+        function addMash() {
+            if (mesh !== undefined) {
+                scene.remove(mesh);
+                geometry.dispose();
+            }
+            var material = new THREE.MeshBasicMaterial({ color: 0xfefefe, wireframe: true, opacity: 0.5 });
+
+            geometry = geometries[options.Geometry];
+            mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            // 辅助工具
+            var vertexNormalsHelper = new VertexNormalsHelper(mesh, 10);
+            mesh.add(vertexNormalsHelper);
+        }
+        // 选择器
+        var geometriesIndex = {
+            BoxBufferGeometry: 0,
+            CircleBufferGeometry: 1,
+            CylinderBufferGeometry: 2,
+            IcosahedronBufferGeometry: 3,
+            OctahedronBufferGeometry: 4,
+            PlaneBufferGeometry: 5,
+            RingBufferGeometry: 6,
+            SphereBufferGeometry: 7,
+            TorusBufferGeometry: 8,
+            TorusKnotBufferGeometry: 9
+        };
+
+        var gui = new GUI({ width: 350 });
+        gui.add(options, 'Geometry', geometriesIndex).onChange(function () {
+            addMash();
+        });
+    </script>
+</body>
+
+</html>
