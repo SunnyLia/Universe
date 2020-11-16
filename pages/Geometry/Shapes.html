@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My first three.js app</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../build/main.css">
+</head>
+
+<body>
+    <script src="../../build/three.js"></script>
+    <script type="module">
+        import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+
+        /**
+         * 创建场景对象Scene
+         */
+        var scene = new THREE.Scene();
+
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        //创建相机对象
+        var camera = new THREE.PerspectiveCamera(60, width / height, 1, 1000);
+        camera.position.set(40, -50, 500);
+        scene.add(camera);
+        /**
+         * 光源设置
+         */
+        //点光源
+        var point = new THREE.PointLight(0xffffff);
+        camera.add(point); //点光源添加到场景中
+
+        /**
+         * 创建网格模型
+         */
+        var group = new THREE.Group();
+        group.position.y = -100
+        scene.add(group);
+
+        var loader = new THREE.TextureLoader();
+        var texture = loader.load("../../textures/uv_grid_opengl.jpg");
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(0.008, 0.008);
+
+        addShape()
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+
+        /*控制器*/
+        var controls = new OrbitControls(camera, renderer.domElement);
+
+        animate()
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function addShape() {
+            /*第一个California*/
+            // 定义顶点坐标
+            var californiaPts = [
+                new THREE.Vector2(610, 320),
+                new THREE.Vector2(450, 300),
+                new THREE.Vector2(392, 392),
+                new THREE.Vector2(266, 438),
+                new THREE.Vector2(190, 570),
+                new THREE.Vector2(190, 600),
+                new THREE.Vector2(160, 620),
+                new THREE.Vector2(160, 650),
+                new THREE.Vector2(180, 640),
+                new THREE.Vector2(165, 680),
+                new THREE.Vector2(150, 670),
+                new THREE.Vector2(90, 737),
+                new THREE.Vector2(80, 795),
+                new THREE.Vector2(50, 835),
+                new THREE.Vector2(64, 870),
+                new THREE.Vector2(60, 945),
+                new THREE.Vector2(300, 945),
+                new THREE.Vector2(300, 743),
+                new THREE.Vector2(600, 473),
+                new THREE.Vector2(626, 425),
+                new THREE.Vector2(600, 370),
+                new THREE.Vector2(610, 320)
+            ];
+            // multiplyScalar方法用来将三维向量的(x,y,z)坐标值直接与参数s相乘.并返回新的坐标值的三维向量
+            for (var i = 0; i < californiaPts.length; i++) {
+                // 将顶点坐标缩小0.25倍
+                californiaPts[i].multiplyScalar(0.25);
+            }
+            // 通过顶点定义轮廓
+            var californiaShape = new THREE.Shape(californiaPts);
+
+            /*第二个Triangle*/
+            var triangleShape = new THREE.Shape()
+                .moveTo(80, 20)
+                .lineTo(40, 80)
+                .lineTo(120, 80)
+                .lineTo(80, 20); // close path
+
+            /*第三个Heart*/
+            var x = 0, y = 0;
+            var heartShape = new THREE.Shape() // From http://blog.burlock.org/html5/130-paths
+                .moveTo(x + 25, y + 25)
+                .bezierCurveTo(x + 25, y + 25, x + 20, y, x, y)
+                .bezierCurveTo(x - 30, y, x - 30, y + 35, x - 30, y + 35)
+                .bezierCurveTo(x - 30, y + 55, x - 10, y + 77, x + 25, y + 95)
+                .bezierCurveTo(x + 60, y + 77, x + 80, y + 55, x + 80, y + 35)
+                .bezierCurveTo(x + 80, y + 35, x + 80, y, x + 50, y)
+                .bezierCurveTo(x + 35, y, x + 25, y + 25, x + 25, y + 25);
+
+            /*第三个Square*/
+            var sqLength = 80;
+            var squareShape = new THREE.Shape()
+                .moveTo(0, 0)
+                .lineTo(0, sqLength)
+                .lineTo(sqLength, sqLength)
+                .lineTo(sqLength, 0)
+                .lineTo(0, 0);
+
+            /*第三个Rounded rectangle*/
+            var x = 0, y = 0, width = 50, height = 50, radius = 20;
+            var roundedRectShape = new THREE.Shape()
+                .moveTo(x, y + radius)
+                .lineTo(x, y + height - radius)
+                .quadraticCurveTo(x, y + height, x + radius, y + height)
+                .lineTo(x + width - radius, y + height)
+                .quadraticCurveTo(x + width, y + height, x + width, y + height - radius)
+                .lineTo(x + width, y + radius)
+                .quadraticCurveTo(x + width, y, x + width - radius, y)
+                .lineTo(x + radius, y)
+                .quadraticCurveTo(x, y, x, y + radius)
+
+            /*第三个Track*/
+            var trackShape = new THREE.Shape()
+                .moveTo(40, 40)
+                .lineTo(40, 160)
+                .absarc(60, 160, 20, Math.PI, 0, true)
+                .lineTo(80, 40)
+                .absarc(60, 40, 20, 2 * Math.PI, Math.PI, true);
+
+            /*第三个Circle*/
+            var circleRadius = 40;
+            var circleShape = new THREE.Shape()
+                .moveTo(0, circleRadius)
+                .quadraticCurveTo(circleRadius, circleRadius, circleRadius, 0)
+                .quadraticCurveTo(circleRadius, - circleRadius, 0, - circleRadius)
+                .quadraticCurveTo(- circleRadius, - circleRadius, - circleRadius, 0)
+                .quadraticCurveTo(- circleRadius, circleRadius, 0, circleRadius);
+
+            /*第三个Fish*/
+            var x = y = 0;
+            var fishShape = new THREE.Shape()
+                .moveTo(x, y)
+                .quadraticCurveTo(x + 50, y - 80, x + 90, y - 10)
+                .quadraticCurveTo(x + 100, y - 10, x + 115, y - 40)
+                .quadraticCurveTo(x + 115, y, x + 115, y + 40)
+                .quadraticCurveTo(x + 100, y + 10, x + 90, y + 10)
+                .quadraticCurveTo(x + 50, y + 80, x, y);
+
+            /*第三个Arc circle*/
+            var arcShape = new THREE.Shape()
+                .moveTo(50, 10)
+                .absarc(10, 10, 40, 0, Math.PI * 2, false);
+            var holePath = new THREE.Path()
+                .moveTo(20, 10)
+                .absarc(10, 10, 10, 0, Math.PI * 2, true);
+            arcShape.holes.push(holePath);
+
+            /*第三个Smiley*/
+            var smileyShape = new THREE.Shape()
+                .moveTo(80, 40)
+                .absarc(40, 40, 40, 0, Math.PI * 2, false);
+            var smileyEye1Path = new THREE.Path()
+                .moveTo(35, 20)
+                .absellipse(25, 20, 10, 10, 0, Math.PI * 2, true);
+            var smileyEye2Path = new THREE.Path()
+                .moveTo(65, 20)
+                .absarc(55, 20, 10, 0, Math.PI * 2, true);
+            var smileyMouthPath = new THREE.Path()
+                .moveTo(20, 40)
+                .quadraticCurveTo(40, 60, 60, 40)
+                .bezierCurveTo(70, 45, 70, 50, 60, 60)
+                .quadraticCurveTo(40, 80, 20, 60)
+                .quadraticCurveTo(5, 50, 20, 40);
+            smileyShape.holes.push(smileyEye1Path);
+            smileyShape.holes.push(smileyEye2Path);
+            smileyShape.holes.push(smileyMouthPath);
+
+            /*第三个Spline shape*/
+            var splinepts = [
+                new THREE.Vector2(70, 20),
+                new THREE.Vector2(80, 90),
+                new THREE.Vector2(- 30, 70),
+                new THREE.Vector2(0, 0)
+            ];
+            var splineShape = new THREE.Shape()
+                .moveTo(0, 0)
+                .splineThru(splinepts);
+
+            // 调用addShape,创建shape
+            var extrudeSettings = { depth: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+            createShape(californiaShape, extrudeSettings, 0xf08000, - 300, - 100, 0, 0, 0, 0, 1);
+            createShape(triangleShape, extrudeSettings, 0x8080f0, - 180, 0, 0, 0, 0, 0, 1);
+            createShape(roundedRectShape, extrudeSettings, 0x008000, - 150, 150, 0, 0, 0, 0, 1);
+            createShape(trackShape, extrudeSettings, 0x008080, 200, - 100, 0, 0, 0, 0, 1);
+            createShape(squareShape, extrudeSettings, 0x0040f0, 150, 100, 0, 0, 0, 0, 1);
+            createShape(heartShape, extrudeSettings, 0xf00000, 60, 100, 0, 0, 0, Math.PI, 1);
+            createShape(circleShape, extrudeSettings, 0x00f000, 120, 250, 0, 0, 0, 0, 1);
+            createShape(fishShape, extrudeSettings, 0x404040, - 60, 200, 0, 0, 0, 0, 1);
+            createShape(smileyShape, extrudeSettings, 0xf000f0, - 200, 250, 0, 0, 0, Math.PI, 1);
+            createShape(arcShape, extrudeSettings, 0x804000, 150, 0, 0, 0, 0, 0, 1);
+            createShape(splineShape, extrudeSettings, 0x808080, - 50, - 100, 0, 0, 0, 0, 1);
+            createLineShape(arcShape.holes[0], 0x804000, 150, 0, 0, 0, 0, 0, 1);
+            for (var i = 0; i < smileyShape.holes.length; i += 1) {
+                createLineShape(smileyShape.holes[i], 0xf000f0, - 200, 250, 0, 0, 0, Math.PI, 1);
+            }
+        }
+
+        function createShape(shape, extrudeSettings, color, x, y, z, rx, ry, rz, s) {
+
+            // flat shape with texture
+            // note: default UVs generated by THREE.ShapeBufferGeometry are simply the x- and y-coordinates of the vertices
+
+            var geometry = new THREE.ShapeBufferGeometry(shape);
+
+            var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, map: texture }));
+            mesh.position.set(x, y, z - 175);
+            mesh.rotation.set(rx, ry, rz);
+            mesh.scale.set(s, s, s);
+            group.add(mesh);
+
+            // flat shape
+
+            var geometry = new THREE.ShapeBufferGeometry(shape);
+
+            var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide }));
+            mesh.position.set(x, y, z - 125);
+            mesh.rotation.set(rx, ry, rz);
+            mesh.scale.set(s, s, s);
+            group.add(mesh);
+
+            // extruded shape
+
+            var geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings);
+
+            var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ color: color }));
+            mesh.position.set(x, y, z - 75);
+            mesh.rotation.set(rx, ry, rz);
+            mesh.scale.set(s, s, s);
+            group.add(mesh);
+
+            createLineShape(shape, color, x, y, z, rx, ry, rz, s);
+
+        }
+        function createLineShape(shape, color, x, y, z, rx, ry, rz, s) {
+
+            // lines
+
+            shape.autoClose = true;
+
+            var points = shape.getPoints();
+            var spacedPoints = shape.getSpacedPoints(50);
+
+            var geometryPoints = new THREE.BufferGeometry().setFromPoints(points);
+            var geometrySpacedPoints = new THREE.BufferGeometry().setFromPoints(spacedPoints);
+
+            // solid line
+
+            var line = new THREE.Line(geometryPoints, new THREE.LineBasicMaterial({ color: color }));
+            line.position.set(x, y, z - 25);
+            line.rotation.set(rx, ry, rz);
+            line.scale.set(s, s, s);
+            group.add(line);
+
+            // line from equidistance sampled points
+
+            var line = new THREE.Line(geometrySpacedPoints, new THREE.LineBasicMaterial({ color: color }));
+            line.position.set(x, y, z + 25);
+            line.rotation.set(rx, ry, rz);
+            line.scale.set(s, s, s);
+            group.add(line);
+
+            // vertices from real points
+
+            var particles = new THREE.Points(geometryPoints, new THREE.PointsMaterial({ color: color, size: 4 }));
+            particles.position.set(x, y, z + 75);
+            particles.rotation.set(rx, ry, rz);
+            particles.scale.set(s, s, s);
+            group.add(particles);
+
+            // equidistance sampled points
+
+            var particles = new THREE.Points(geometrySpacedPoints, new THREE.PointsMaterial({ color: color, size: 4 }));
+            particles.position.set(x, y, z + 125);
+            particles.rotation.set(rx, ry, rz);
+            particles.scale.set(s, s, s);
+            group.add(particles);
+
+        }
+
+    </script>
+</body>
+
+</html>
