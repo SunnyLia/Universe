@@ -85,7 +85,7 @@
          * 控制器
          */
         var cameraControls = new OrbitControls(camera, renderer.domElement);
-
+        cameraControls.addEventListener('change', addMash);
 
         /**
          * 创建网格模型
