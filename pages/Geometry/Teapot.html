@@ -15,34 +15,78 @@
         import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
         import { TeapotBufferGeometry } from '../../jsm/geometries/TeapotBufferGeometry.js';
         var options = {
+            size: 400,
+
+            shininess: 40.0,
+            ka: 0.17,
+            kd: 0.51,
+            ks: 0.2,
+            metallic: true,
+
+            hue: 0.121,
+            saturation: 0.73,
+            lightness: 0.66,
+
+            lhue: 0.04,
+            lsaturation: 0.01,	// non-zero so that fractions will be shown
+            llightness: 1.0,
+
+            // bizarrely, if you initialize these with negative numbers, the sliders
+            // will not show any decimal places.
+            lx: 0.32,
+            ly: 0.39,
+            lz: 0.7,
+            newTess: 15,
+            bottom: true,
+            lid: true,
+            body: true,
+            fitLid: false,
+            nonblinn: false,
             newShading: 3
         };
-        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        var geometry = new TeapotBufferGeometry(options.size, options.newTess, options.bottom, options.lid, options.body, options.fitLid, !options.nonblinn);
+        var teapot;
+
         /**
          * 创建场景对象Scene
          */
         var scene = new THREE.Scene();
-
         /**
          * 相机设置
          */
         var width = window.innerWidth; //窗口宽度
         var height = window.innerHeight; //窗口高度
         //创建相机对象
-        var camera = new THREE.PerspectiveCamera(60, width / height, 1, 10000);
+        var camera = new THREE.PerspectiveCamera(60, width / height, 1, 100000);
 
-        camera.position.set(200, 300, 200); //设置相机位置
+        camera.position.set(- 600, 550, 1300);
         // camera.lookAt(scene.position); //设置相机方向(指向的场景对象)
         /**
          * 光源设置
          */
         //点光源
-        var point = new THREE.PointLight(0xffffff);
-        scene.add(point); //点光源添加到场景中
+        var light = new THREE.DirectionalLight(0xFFFFFF, 1.0);
+        light.position.set(options.lx, options.ly, options.lz);
+        light.color.setHSL(options.lhue, options.lsaturation, options.llightness);
+        scene.add(light); //点光源添加到场景中
         //环境光
-        var ambient = new THREE.AmbientLight(0x444444);
+        var ambient = new THREE.AmbientLight(0x333333);
+        ambient.color.setHSL(options.hue, options.saturation, options.lightness * options.ka);
         scene.add(ambient);
-        // console.log(scene)
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+
+        /**
+         * 控制器
+         */
+        var cameraControls = new OrbitControls(camera, renderer.domElement);
+
+
         /**
          * 创建网格模型
          */
@@ -61,8 +105,21 @@
         var textureCube = new THREE.CubeTextureLoader().load(urls);
         textureCube.encoding = THREE.sRGBEncoding;
 
+        // 创建material
         var materialColor = new THREE.Color();
         materialColor.setRGB(1.0, 1.0, 1.0);
+        // allocate these just once
+        var diffuseColor = new THREE.Color();
+        diffuseColor.setHSL(options.hue, options.saturation, options.lightness);
+        var specularColor = new THREE.Color();
+        if (options.metallic) {
+            specularColor.copy(diffuseColor);
+        } else {
+            specularColor.setRGB(1.0, 1.0, 1.0);
+        }
+        diffuseColor.multiplyScalar(options.kd);
+        specularColor.multiplyScalar(options.ks);
+
         var materialIndex = {
             wireframe: 0,
             flat: 1,
@@ -73,32 +130,35 @@
         }
         var materialList = [
             new THREE.MeshBasicMaterial({ color: 0xFFFFFF, wireframe: true }),
-            new THREE.MeshPhongMaterial({ color: materialColor, specular: 0x000000, flatShading: true, side: THREE.DoubleSide }),
-            new THREE.MeshLambertMaterial({ color: materialColor, side: THREE.DoubleSide }),
-            new THREE.MeshPhongMaterial({ color: materialColor, side: THREE.DoubleSide }),
-            new THREE.MeshPhongMaterial({ color: materialColor, map: textureMap, side: THREE.DoubleSide }),
-            new THREE.MeshPhongMaterial({ color: materialColor, envMap: textureCube, side: THREE.DoubleSide })
+            new THREE.MeshPhongMaterial({ color: diffuseColor, specular: 0x000000, flatShading: true, side: THREE.DoubleSide }),
+            new THREE.MeshLambertMaterial({ color: diffuseColor, side: THREE.DoubleSide }),
+            new THREE.MeshPhongMaterial({ color: diffuseColor, side: THREE.DoubleSide, shininess: options.shininess }),
+            new THREE.MeshPhongMaterial({ color: diffuseColor, specular: specularColor, map: textureMap, side: THREE.DoubleSide, shininess: options.shininess }),
+            new THREE.MeshPhongMaterial({ color: materialColor, specular: specularColor, envMap: textureCube, side: THREE.DoubleSide })
         ]
-        /**
-         * 创建渲染器对象
-         */
-        var renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(width, height);//设置渲染区域尺寸
-        renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
-        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
 
-
-        var cameraControls = new OrbitControls(camera, renderer.domElement);
-
+        // 创建GUI
         var gui = new GUI();
         gui.add(options, "newShading", materialIndex).name("Shading").onChange(addMash);
 
-        function addMash() {
-            var material = materialList[options.newShading]
-            var geometry = new THREE.BoxGeometry(100, 100, 100); //创建一个立方体几何对象Geometry
+        // 创建网格
+        addMash()
 
-            var mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
-            scene.add(mesh); //网格模型添加到场景中
+        function addMash() {
+            if (teapot !== undefined) {
+                teapot.geometry.dispose();
+                scene.remove(teapot);
+            }
+
+            var material = materialList[options.newShading]
+            teapot = new THREE.Mesh(geometry, material); //网格模型对象Mesh
+            scene.add(teapot); //网格模型添加到场景中
+
+            if (options.newShading == 5) {
+                scene.background = textureCube;
+            } else {
+                scene.background = null;
+            }
             //执行渲染操作   指定场景、相机作为参数
             renderer.render(scene, camera);
         }
