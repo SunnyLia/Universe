@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DOCUMENT</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../build/main.css">
+</head>
+
+<body>
+    <script src="../../build/three.js"></script>
+    <script type="module">
+
+        import { OrbitControls } from '../../jsm/controls/OrbitControls.js';
+
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        /**
+         * 创建场景对象Scene
+         */
+        var scene = new THREE.Scene();
+
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        //创建相机对象
+        var camera = new THREE.PerspectiveCamera(60, width / height, 1, 10000);
+
+        camera.position.set(0, - 400, 600);
+        /**
+         * 光源设置
+         */
+        // //环境光
+        // var ambient = new THREE.AmbientLight(0x444444);
+        // scene.add(ambient);
+        /**
+         * 创建网格模型
+         */
+        var matDark = new THREE.LineBasicMaterial({
+            color: 0x006699,
+            side: THREE.DoubleSide
+        });
+
+        var matLite = new THREE.MeshBasicMaterial({
+            color: 0x006699,
+            transparent: true,
+            opacity: 0.4,
+            side: THREE.DoubleSide
+        });
+        var message = "Hello World !!";
+        var loader = new THREE.FontLoader().load('../../fonts/helvetiker_regular.typeface.json', function (font) {
+            var shapes = font.generateShapes(message, 100);
+            var geometry = new THREE.ShapeBufferGeometry(shapes);
+
+            // 下面这一段是为了让文字水平居中
+            geometry.computeBoundingBox();
+            var xMid = - 0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+            geometry.translate(xMid, 0, 0);
+
+            var text = new THREE.Mesh(geometry, matLite);
+            text.position.z = - 150;
+            scene.add(text);
+
+            // 获取子shapes
+            var holeShapes = [];
+            for (var i = 0; i < shapes.length; i++) {
+                var shape = shapes[i];
+                if (shape.holes && shape.holes.length > 0) {
+                    for (var j = 0; j < shape.holes.length; j++) {
+                        var hole = shape.holes[j];
+                        holeShapes.push(hole);
+                    }
+                }
+            }
+
+            shapes.push.apply(shapes, holeShapes);
+
+            // 创建lineText
+            var lineText = new THREE.Object3D();
+            for (var i = 0; i < shapes.length; i++) {
+                var shape = shapes[i];
+                var points = shape.getPoints();
+                var geometry = new THREE.BufferGeometry().setFromPoints(points);
+                geometry.translate(xMid, 0, 0);
+                var lineMesh = new THREE.Line(geometry, matDark);
+                lineText.add(lineMesh);
+            }
+
+            scene.add(lineText);
+        });
+
+
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+
+        /**
+         * 创建控制器
+         */
+        var controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 0, 0);
+        // controls.update();
+
+        animate()
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+
+        }
+    </script>
+</body>
+
+</html>

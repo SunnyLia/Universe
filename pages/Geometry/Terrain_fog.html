@@ -11,7 +11,7 @@
 <body>
     <script src="../../build/three.js"></script>
     <script type="module">
-        import { FirstPersonControls } from '../../jsm/controls/FirstPersonControls.js';
+        import { FirstPersonControls } from './jsm/controls/FirstPersonControls.js';
         import { ImprovedNoise } from '../../jsm/math/ImprovedNoise.js';
         // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
         var worldWidth = 256, worldDepth = 256;
@@ -21,9 +21,9 @@
          * 创建场景对象Scene
          */
         var scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xefd1b5);
-        scene.fog = new THREE.FogExp2(0xefd1b5, 0.0025);
-        // scene.background = new THREE.Color(0xbfd1e5);
+        // scene.background = new THREE.Color(0xefd1b5);
+        // scene.fog = new THREE.FogExp2(0xefd1b5, 0.0025);
+        scene.background = new THREE.Color(0xbfd1e5);
 
         /**
          * 相机设置
@@ -32,7 +32,8 @@
         var height = window.innerHeight; //窗口高度
         //创建相机对象
         var camera = new THREE.PerspectiveCamera(60, width / height, 10, 20000);
-        camera.position.set(100, 800, -800);
+        camera.position.y = data[worldWidth / 2 + worldDepth / 2 * worldWidth] + 500 + 2000;
+        camera.position.x = 2000;
 
         /**
          * 光源设置
@@ -85,7 +86,7 @@
         animate()
         function animate() {
             requestAnimationFrame(animate);
-            controls.update(clock.getDelta());
+            controls.update( clock.getDelta() );
             renderer.render(scene, camera);
         }
         // 随机高度
