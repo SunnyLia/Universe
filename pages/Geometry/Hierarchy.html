@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>DOCUMENT</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link type="text/css" rel="stylesheet" href="../../build/main.css">
+</head>
+
+<body>
+    <script src="../../build/three.js"></script>
+    <script type="module">
+        // 通过摄像机渲染场景，三要素：场景、相机和渲染器。
+        /**
+         * 创建场景对象Scene
+         */
+        var scene = new THREE.Scene();
+
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        //创建相机对象
+        var camera = new THREE.PerspectiveCamera(60, width / height, 1, 10000);
+        // camera.position.z = 500;
+
+        /**
+         * 创建网格模型
+         */
+        var geometry = new THREE.BoxBufferGeometry(100, 100, 100); //创建一个立方体几何对象Geometry
+        var material = new THREE.MeshNormalMaterial(); //一种把法向量映射到RGB颜色的材质。
+        var group = new THREE.Group();
+        // 生成1000个小立方体
+        for (var i = 0; i < 1000; i++) {
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = Math.random() * 2000 - 1000;//随机坐标为-1000~1000
+            mesh.position.y = Math.random() * 2000 - 1000;
+            mesh.position.z = Math.random() * 2000 - 1000;
+
+            mesh.rotation.x = Math.random() * 2 * Math.PI;//随机角度为0~360度
+            mesh.rotation.y = Math.random() * 2 * Math.PI;
+
+            mesh.matrixAutoUpdate = false; //矩阵是否重新计算
+            mesh.updateMatrix(); //手动更新矩阵
+
+            group.add(mesh);
+
+        }
+        scene.add(group); //网格模型添加到场景中
+
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+        // renderer.render(scene, camera);
+        /**
+         * 添加事件
+         */
+        var mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', onDocumentMouseMove, false);
+
+        function onDocumentMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) * 10;
+            mouseY = (event.clientY - window.innerHeight / 2) * 10;
+        }
+
+        /**
+         * 循环动画
+         */
+        animate()
+        function animate() {
+
+            requestAnimationFrame(animate);
+            var time = Date.now() * 0.001;
+
+            var rx = Math.sin(time * 0.7) * 0.5,
+                ry = Math.sin(time * 0.3) * 0.5,
+                rz = Math.sin(time * 0.2) * 0.5;
+
+            camera.position.x += (mouseX - camera.position.x) * 0.05;
+            camera.position.y += (- mouseY - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+            group.rotation.x = rx;
+            group.rotation.y = ry;
+            group.rotation.z = rz;
+
+            renderer.render(scene, camera);
+
+        }
+    </script>
+</body>
+
+</html>
