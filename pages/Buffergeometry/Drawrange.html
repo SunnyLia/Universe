@@ -19,10 +19,10 @@
             minDistance: 150,
             limitConnections: false,
             maxConnections: 20,
-            particleCount: 500
+            particleCount: 50
         };
         var maxParticleCount = 1000;
-        var particleCount = 500;
+        var particleCount = 50;
         var r = 800;
         /**
          * 创建场景对象Scene
@@ -47,9 +47,26 @@
          */
         var group = new THREE.Group();
         scene.add(group);
-        var particlesData = [];
-        var particlePositions = new Float32Array(maxParticleCount * 3); //所有点的坐标，长度为点数的三倍（x,y,z）
+        var positions = new Float32Array(maxParticleCount * maxParticleCount * 3); //创建线的坐标数据
+        var colors = new Float32Array(maxParticleCount * maxParticleCount * 3); //创建线的颜色数据
+        var particlePositions = new Float32Array(maxParticleCount * 3); //创建球的坐标数据，长度为点数的三倍（x,y,z）
 
+        var particlesData = []; //球数据信息
+        for (var i = 0; i < maxParticleCount; i++) {
+            var x = Math.random() * r - r / 2; //坐标-400~400之间
+            var y = Math.random() * r - r / 2;
+            var z = Math.random() * r - r / 2;
+
+            particlePositions[i * 3] = x;
+            particlePositions[i * 3 + 1] = y;
+            particlePositions[i * 3 + 2] = z;
+
+            particlesData.push({
+                velocity: new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1),
+                numConnections: 0
+            });
+        }
+        var linesMesh, pointCloud;
         createObject()
         /**
          * 创建渲染器对象
@@ -62,16 +79,12 @@
         /**
          * 创建辅助器
          */
-        var mesh1 = new THREE.Mesh(new THREE.BoxBufferGeometry(r, r, r), new THREE.MeshBasicMaterial({
-            color: 0x101010,
-            transparent: true,
-            blending: THREE.AdditiveBlending //在使用此材质显示对象时要使用何种混合==>THREE.AdditiveBlending把黑色与背景色融合
-        }))
+        var mesh1 = new THREE.Mesh(new THREE.BoxBufferGeometry(r, r, r))
         var helper = new THREE.BoxHelper(mesh1);
-        // helper.material.color.setHex(0x101010);
-        // helper.material.blending = THREE.AdditiveBlending; //把黑色与背景色融合
-        // helper.material.transparent = true;
-        scene.add(helper);
+        helper.material.color.setHex(0x101010);
+        helper.material.blending = THREE.AdditiveBlending; //把黑色与背景色融合
+        helper.material.transparent = true;
+        group.add(helper);
         var controls = new OrbitControls(camera, renderer.domElement);
         controls.minDistance = 1000;
         controls.maxDistance = 3000;
@@ -81,14 +94,18 @@
         animate()
         function animate() {
             requestAnimationFrame(animate);
-            // updateAnimate();
-            controls.update();
+            updateAnimate();
+            var time = Date.now() * 0.001;
+            group.rotation.y = time * 0.1;
             //执行渲染操作   指定场景、相机作为参数
             renderer.render(scene, camera);
         }
 
         function createObject() {
-
+            // 创建物体，点
+            var particles = new THREE.BufferGeometry();
+            particles.setDrawRange(0, particleCount); //用于判断几何体的哪个部分需要被渲染
+            particles.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3).setUsage(THREE.DynamicDrawUsage));
             var pMaterial = new THREE.PointsMaterial({
                 color: 0xFFFFFF,
                 size: 3,
@@ -96,33 +113,12 @@
                 transparent: true,
                 sizeAttenuation: false
             });
-
-            for (var i = 0; i < maxParticleCount; i++) {
-                var x = Math.random() * r - r / 2; //坐标-400~400之间
-                var y = Math.random() * r - r / 2;
-                var z = Math.random() * r - r / 2;
-
-                particlePositions[i * 3] = x;
-                particlePositions[i * 3 + 1] = y;
-                particlePositions[i * 3 + 2] = z;
-
-                // add it to the geometry
-                particlesData.push({
-                    velocity: new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1),
-                    numConnections: 0
-                });
-            }
-            var particles = new THREE.BufferGeometry();
-            particles.setDrawRange(0, particleCount); //用于判断几何体的哪个部分需要被渲染
-            particles.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3).setUsage(THREE.DynamicDrawUsage));
-            // create the particle system
-            var pointCloud = new THREE.Points(particles, pMaterial);
+            pointCloud = new THREE.Points(particles, pMaterial);
             group.add(pointCloud);
 
+            // 创建物体，线
             var geometry = new THREE.BufferGeometry();
-            var positions = new Float32Array(maxParticleCount * maxParticleCount * 3);
             geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
-            var colors = new Float32Array(maxParticleCount * maxParticleCount * 3);
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3).setUsage(THREE.DynamicDrawUsage));
             geometry.computeBoundingSphere();
             geometry.setDrawRange(0, 0);
@@ -131,8 +127,7 @@
                 blending: THREE.AdditiveBlending,
                 transparent: true
             });
-
-            var linesMesh = new THREE.LineSegments(geometry, material);
+            linesMesh = new THREE.LineSegments(geometry, material);
             group.add(linesMesh);
         }
         // 更新动画
@@ -140,22 +135,60 @@
             var vertexpos = 0;
             var colorpos = 0;
             var numConnected = 0;
-            for (var i = 0; i < particleCount; i++) {
-                // get the particle
-                particlesData[i].numConnections = 0;
-                particlePositions[i * 3] += particlesData[i].velocity.x;
-                particlePositions[i * 3 + 1] += particlesData[i].velocity.y;
-                particlePositions[i * 3 + 2] += particlesData[i].velocity.z;
+            for (var i = 0; i < particleCount; i++) particlesData[i].numConnections = 0;
 
-                if (particlePositions[i * 3] < - r / 2 || particlePositions[i * 3] > r / 2)
-                    particlesData[i].velocity.x = - particlesData[i].velocity.x;
-                if (particlePositions[i * 3 + 1] < - r / 2 || particlePositions[i * 3 + 1] > r / 2)
-                    particlesData[i].velocity.y = - particlesData[i].velocity.y;
-                if (particlePositions[i * 3 + 2] < - r / 2 || particlePositions[i * 3 + 2] > r / 2)
-                    particlesData[i].velocity.z = - particlesData[i].velocity.z;
-                if (effectController.limitConnections && particlesData[i].numConnections >= effectController.maxConnections)
-                    continue;
+            for (var i = 0; i < particleCount; i++) {
+                // 球坐标赋值及更正，使其坐标永远在正方体区域内，超过时坐标取返
+                particlePositions[i * 3] += particlesData[i].velocity.x;
+                if (particlePositions[i * 3] < - r / 2 || particlePositions[i * 3] > r / 2) particlesData[i].velocity.x = - particlesData[i].velocity.x;
+
+                particlePositions[i * 3 + 1] += particlesData[i].velocity.y;
+                if (particlePositions[i * 3 + 1] < - r / 2 || particlePositions[i * 3 + 1] > r / 2) particlesData[i].velocity.y = - particlesData[i].velocity.y;
+
+                particlePositions[i * 3 + 2] += particlesData[i].velocity.z;
+                if (particlePositions[i * 3 + 2] < - r / 2 || particlePositions[i * 3 + 2] > r / 2) particlesData[i].velocity.z = - particlesData[i].velocity.z;
+
+                if (!effectController.limitConnections || particlesData[i].numConnections < effectController.maxConnections) {
+                    // Check collision
+                    for (var j = i + 1; j < particleCount; j++) {
+                        if (!effectController.limitConnections || particlesData[j].numConnections < effectController.maxConnections) {
+                            var dx = particlePositions[i * 3] - particlePositions[j * 3];
+                            var dy = particlePositions[i * 3 + 1] - particlePositions[j * 3 + 1];
+                            var dz = particlePositions[i * 3 + 2] - particlePositions[j * 3 + 2];
+                            var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                            if (dist < effectController.minDistance) {
+                                particlesData[i].numConnections++;
+                                particlesData[j].numConnections++;
+
+                                var alpha = 1.0 - dist / effectController.minDistance;
+
+                                positions[vertexpos++] = particlePositions[i * 3];
+                                positions[vertexpos++] = particlePositions[i * 3 + 1];
+                                positions[vertexpos++] = particlePositions[i * 3 + 2];
+
+                                positions[vertexpos++] = particlePositions[j * 3];
+                                positions[vertexpos++] = particlePositions[j * 3 + 1];
+                                positions[vertexpos++] = particlePositions[j * 3 + 2];
+
+                                colors[colorpos++] = alpha;
+                                colors[colorpos++] = alpha;
+                                colors[colorpos++] = alpha;
+
+                                colors[colorpos++] = alpha;
+                                colors[colorpos++] = alpha;
+                                colors[colorpos++] = alpha;
+
+                                numConnected++;
+                            }
+                        }
+                    }
+                }
             }
+            linesMesh.geometry.setDrawRange(0, numConnected * 2);
+            linesMesh.geometry.attributes.position.needsUpdate = true;
+            linesMesh.geometry.attributes.color.needsUpdate = true;
+
+            pointCloud.geometry.attributes.position.needsUpdate = true;
         }
     </script>
 </body>
